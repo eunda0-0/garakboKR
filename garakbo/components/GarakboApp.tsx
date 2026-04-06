@@ -11,6 +11,30 @@ const INST = [
   { name: '징', color: '#5856d6', sounds: ['징','징-','짓'] },
 ]
 
+const PRINT_STYLES = `
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:white;}
+@page{size:A4 portrait;margin:18mm 16mm;}
+.print-page{width:100%;text-align:center;page-break-after:always;break-after:page;}
+.print-page:last-child{page-break-after:auto;break-after:auto;}
+.print-page-heading{text-align:center;margin-bottom:16px;}
+.pt{font-size:20px;font-weight:700;letter-spacing:-.3px;color:#1d1d1f;}
+table.gp{border-collapse:collapse;border:2px solid #1d1d1f;margin:0 auto;}
+table.gp td{padding:0;text-align:center;vertical-align:middle;}
+table.gp tbody{page-break-inside:avoid;break-inside:avoid;}
+table.gp tr{page-break-inside:avoid;break-inside:avoid;}
+.gp-msr-num{width:28px;min-width:28px;background:#f5f5f7;font-size:11px;font-weight:700;color:#6e6e73;border-right:2px solid #1d1d1f!important;border-bottom:2px solid #1d1d1f!important;}
+.gp-inst-name{width:44px;min-width:44px;background:#f5f5f7;font-size:12px;font-weight:700;color:#1d1d1f;border-right:2px solid #1d1d1f!important;}
+.gp-note{width:38px;height:38px;font-size:12px;font-weight:600;color:#1d1d1f;background:#fff;}
+.gp-free-num{width:28px;min-width:28px;background:#f5f5f7;font-size:11px;font-weight:600;color:#aeaeb2;border-right:1.5px solid #8e8e93!important;}
+.gp-br-sub{border-right:1px dashed #e5e5ea!important;}
+.gp-br-beat{border-right:1.5px solid #8e8e93!important;}
+.gp-br-edge{border-right:2px solid #1d1d1f!important;}
+.gp-bb-inst{border-bottom:1px solid #d2d2d7!important;}
+.gp-bb-block{border-bottom:2px solid #1d1d1f!important;}
+.gp-desc{min-width:160px;width:160px;font-size:11px;color:#6e6e73;border-left:2px solid #1d1d1f!important;padding:6px 9px;text-align:left;vertical-align:top;word-break:break-all;white-space:pre-wrap;}
+`
+
 export default function GarakboApp() {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -48,7 +72,6 @@ export default function GarakboApp() {
     const sbSel = () => root.querySelector('.sb-sel') as HTMLElement
     const selToolbar = () => root.querySelector('.sel-toolbar') as HTMLElement
     const handlePopup = () => root.querySelector('.handle-popup') as HTMLElement
-    const printArea = () => root.querySelector('#printArea') as HTMLElement
 
     // ── Mode switch ──
     function setMode(m: string) {
@@ -196,7 +219,6 @@ export default function GarakboApp() {
               inp.addEventListener('mouseover', e => onCellMouseOver(e, td))
               inp.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenuAt(e as MouseEvent) })
 
-              // ── 셀 mousedown (드래그 선택용) ──
               td.addEventListener('mousedown', e => {
                 if (e.target === inp) return
                 e.preventDefault()
@@ -296,7 +318,6 @@ export default function GarakboApp() {
             inp.addEventListener('mouseover', e => onCellMouseOver(e, td))
             inp.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenuAt(e as MouseEvent) })
 
-            // ── 셀 mousedown (드래그 선택용) ──
             td.addEventListener('mousedown', e => {
               if (e.target === inp) return
               e.preventDefault()
@@ -535,115 +556,103 @@ export default function GarakboApp() {
       hideSelToolbar()
     }
 
-    // ── PDF Export ──
+    // ── PDF Export (새 창 방식) ──
     const SAMUL_PER_PAGE = 4, BASIC_PER_PAGE = 8
 
-    function exportPDF() {
-      const title = titleInput().value || '가락보'
-      const pa = printArea(); pa.innerHTML = ''
+    function buildPrintHTML(title: string): string {
+      const pages: string[] = []
 
       if (mode === 'samul') {
-        const pages = Math.ceil(numM / SAMUL_PER_PAGE)
-        for (let p = 0; p < pages; p++) {
-          const pageDiv = document.createElement('div'); pageDiv.className = 'print-page'
-
-          if (p === 0) {
-            const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
-            const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
-            ptDiv.textContent = title
-            hdg.appendChild(ptDiv)
-            pageDiv.appendChild(hdg)
-          }
-
-          const tbl = document.createElement('table'); tbl.className = 'gp'
+        const totalPages = Math.ceil(numM / SAMUL_PER_PAGE)
+        for (let p = 0; p < totalPages; p++) {
           const start = p * SAMUL_PER_PAGE, end = Math.min(start + SAMUL_PER_PAGE, numM)
+          let html = `<div class="print-page">`
+          if (p === 0) html += `<div class="print-page-heading"><div class="pt">${title}</div></div>`
+          html += `<table class="gp">`
 
           for (let m = start; m < end; m++) {
-            const tbody = document.createElement('tbody')
-            tbody.style.pageBreakInside = 'avoid'
-            tbody.style.breakInside = 'avoid'
-
+            html += `<tbody>`
             INST.forEach((inst, ii) => {
-              const lastInst = ii === INST.length - 1, bbClass = lastInst ? 'gp-bb-block' : 'gp-bb-inst'
-              const tr = document.createElement('tr')
-
-              if (ii === 0) {
-                const numTd = document.createElement('td'); numTd.className = 'gp-msr-num'; numTd.rowSpan = INST.length
-                numTd.textContent = String(m + 1); tr.appendChild(numTd)
+              const lastInst = ii === INST.length - 1
+              const bbClass = lastInst ? 'gp-bb-block' : 'gp-bb-inst'
+              html += `<tr>`
+              if (ii === 0) html += `<td class="gp-msr-num" rowspan="${INST.length}">${m + 1}</td>`
+              html += `<td class="gp-inst-name ${bbClass}">${inst.name}</td>`
+              for (let b = 0; b < BEATS; b++) {
+                for (let s = 0; s < SUBS; s++) {
+                  const ci = b * SUBS + s
+                  const nd = samulData[`${m}_${ii}_${ci}`]
+                  const brClass = s < SUBS-1 ? 'gp-br-sub' : b < BEATS-1 ? 'gp-br-beat' : 'gp-br-edge'
+                  html += `<td class="gp-note ${bbClass} ${brClass}">${nd ? nd.snd : ''}</td>`
+                }
               }
-
-              const nameTd = document.createElement('td'); nameTd.className = 'gp-inst-name ' + bbClass
-              nameTd.textContent = inst.name; tr.appendChild(nameTd)
-
-              for (let b = 0; b < BEATS; b++) for (let s = 0; s < SUBS; s++) {
-                const ci = b * SUBS + s, key = `${m}_${ii}_${ci}`, nd = samulData[key]
-                const td = document.createElement('td'); td.className = 'gp-note ' + bbClass
-                if (s < SUBS-1) td.classList.add('gp-br-sub'); else if (b < BEATS-1) td.classList.add('gp-br-beat'); else td.classList.add('gp-br-edge')
-                if (nd) td.textContent = nd.snd; tr.appendChild(td)
-              }
-
               if (showDesc && ii === 0) {
-                const dTd = document.createElement('td'); dTd.className = 'gp-desc gp-bb-block'; dTd.rowSpan = INST.length
-                dTd.textContent = descData[`samul_${m}`] || ''; tr.appendChild(dTd)
+                html += `<td class="gp-desc gp-bb-block" rowspan="${INST.length}">${descData[`samul_${m}`] || ''}</td>`
               }
-
-              tbody.appendChild(tr)
+              html += `</tr>`
             })
-
-            tbl.appendChild(tbody)
+            html += `</tbody>`
           }
 
-          pageDiv.appendChild(tbl); pa.appendChild(pageDiv)
+          html += `</table></div>`
+          pages.push(html)
         }
-
       } else {
-        const pages = Math.ceil(basicRows / BASIC_PER_PAGE)
-        for (let p = 0; p < pages; p++) {
-          const pageDiv = document.createElement('div'); pageDiv.className = 'print-page'
-
-          if (p === 0) {
-            const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
-            const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
-            ptDiv.textContent = title
-            hdg.appendChild(ptDiv)
-            pageDiv.appendChild(hdg)
-          }
-
-          const tbl = document.createElement('table'); tbl.className = 'gp'
+        const totalPages = Math.ceil(basicRows / BASIC_PER_PAGE)
+        for (let p = 0; p < totalPages; p++) {
           const start = p * BASIC_PER_PAGE, end = Math.min(start + BASIC_PER_PAGE, basicRows)
+          let html = `<div class="print-page">`
+          if (p === 0) html += `<div class="print-page-heading"><div class="pt">${title}</div></div>`
+          html += `<table class="gp">`
 
           for (let r = start; r < end; r++) {
-            const tbody = document.createElement('tbody')
-            tbody.style.pageBreakInside = 'avoid'
-            tbody.style.breakInside = 'avoid'
-
-            const lastRow = r === end - 1, bbClass = lastRow ? 'gp-bb-block' : 'gp-bb-inst'
-            const tr = document.createElement('tr')
-
-            const numTd = document.createElement('td'); numTd.className = 'gp-free-num ' + bbClass
-            numTd.textContent = String(r + 1); tr.appendChild(numTd)
-
-            for (let b = 0; b < BEATS; b++) for (let s = 0; s < SUBS; s++) {
-              const ci = b * SUBS + s, key = `${r}_${ci}`, nd = basicData[key]
-              const td = document.createElement('td'); td.className = 'gp-note ' + bbClass
-              if (s < SUBS-1) td.classList.add('gp-br-sub'); else if (b < BEATS-1) td.classList.add('gp-br-beat'); else td.classList.add('gp-br-edge')
-              if (nd) td.textContent = nd.snd; tr.appendChild(td)
+            const lastRow = r === end - 1
+            const bbClass = lastRow ? 'gp-bb-block' : 'gp-bb-inst'
+            html += `<tbody><tr>`
+            html += `<td class="gp-free-num ${bbClass}">${r + 1}</td>`
+            for (let b = 0; b < BEATS; b++) {
+              for (let s = 0; s < SUBS; s++) {
+                const ci = b * SUBS + s
+                const nd = basicData[`${r}_${ci}`]
+                const brClass = s < SUBS-1 ? 'gp-br-sub' : b < BEATS-1 ? 'gp-br-beat' : 'gp-br-edge'
+                html += `<td class="gp-note ${bbClass} ${brClass}">${nd ? nd.snd : ''}</td>`
+              }
             }
-
-            if (showDesc) {
-              const dTd = document.createElement('td'); dTd.className = 'gp-desc ' + bbClass
-              dTd.textContent = descData[`basic_${r}`] || ''; tr.appendChild(dTd)
-            }
-
-            tbody.appendChild(tr)
-            tbl.appendChild(tbody)
+            if (showDesc) html += `<td class="gp-desc ${bbClass}">${descData[`basic_${r}`] || ''}</td>`
+            html += `</tr></tbody>`
           }
 
-          pageDiv.appendChild(tbl); pa.appendChild(pageDiv)
+          html += `</table></div>`
+          pages.push(html)
         }
       }
 
-      window.print()
+      return pages.join('')
+    }
+
+    function exportPDF() {
+      const title = titleInput().value || '가락보'
+      const printWin = window.open('', '_blank', 'width=900,height=700')
+      if (!printWin) { alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.'); return }
+
+      const bodyHTML = buildPrintHTML(title)
+
+      printWin.document.write(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous">
+<style>${PRINT_STYLES}</style>
+</head>
+<body>${bodyHTML}</body>
+</html>`)
+      printWin.document.close()
+      printWin.onload = () => {
+        setTimeout(() => {
+          printWin.focus()
+          printWin.print()
+        }, 500)
+      }
     }
 
     // ── Event wiring ──
@@ -738,7 +747,6 @@ export default function GarakboApp() {
             </div>
             <div className="score-container" />
           </div>
-          <div id="printArea" />
         </div>
       </div>
 
