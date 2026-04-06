@@ -5,10 +5,10 @@ import { useEffect, useRef } from 'react'
 const BEATS = 4, SUBS = 3, CELLS = BEATS * SUBS
 
 const INST = [
-  { name: '쇠',  color: '#ff3b30', sounds: ['갱', '당','개','지-','갯','딱','뜨리','깽'] },
+  { name: '쇠', color: '#ff3b30', sounds: ['갱','개','지-','갯','딱','뜨리','깽'] },
   { name: '장구', color: '#007aff', sounds: ['덩','구','궁','따','기','기기','기따'] },
-  { name: '북',   color: '#34c759', sounds: ['둥','두','딱'] },
-  { name: '징',   color: '#5856d6', sounds: ['징','징-','짓'] },
+  { name: '북', color: '#34c759', sounds: ['둥','두','딱'] },
+  { name: '징', color: '#5856d6', sounds: ['징','징-','짓'] },
 ]
 
 export default function GarakboApp() {
@@ -19,18 +19,18 @@ export default function GarakboApp() {
     if (!root) return
 
     // ── State ──
-    let mode      = 'samul'
-    let numM      = 4
+    let mode = 'samul'
+    let numM = 4
     let samulData: Record<string, { snd: string }> = {}
     let basicRows = 4
     let basicData: Record<string, { snd: string }> = {}
-    let descData:  Record<string, string> = {}
-    let showDesc  = false
+    let descData: Record<string, string> = {}
+    let showDesc = false
     let selI = 0, selS = 0, openI = 0
     let popType: string | null = null, popIdx: number | null = null
 
     // Selection state
-    let selAnchor:  { r: number; c: number } | null = null
+    let selAnchor: { r: number; c: number } | null = null
     let selCurrent: { r: number; c: number } | null = null
     let mouseDownCell: HTMLElement | null = null
     let mouseDownX = 0, mouseDownY = 0
@@ -40,16 +40,15 @@ export default function GarakboApp() {
     let lastFocusedSamulInp: HTMLInputElement | null = null
 
     // ── DOM refs ──
-    const $  = (id: string) => root.querySelector('#' + id) as HTMLElement
-    const titleInput   = () => root.querySelector('.title-input')   as HTMLInputElement
-    const titleDisplay = () => root.querySelector('.s-title')        as HTMLElement
+    const titleInput = () => root.querySelector('.title-input') as HTMLInputElement
+    const titleDisplay = () => root.querySelector('.s-title') as HTMLElement
     const scoreContainer = () => root.querySelector('.score-container') as HTMLElement
-    const instList     = () => root.querySelector('.inst-list')      as HTMLElement
-    const msrBadge     = () => root.querySelector('.msr-badge')      as HTMLElement
-    const sbSel        = () => root.querySelector('.sb-sel')         as HTMLElement
-    const selToolbar   = () => root.querySelector('.sel-toolbar')    as HTMLElement
-    const handlePopup  = () => root.querySelector('.handle-popup')   as HTMLElement
-    const printArea    = () => root.querySelector('#printArea')       as HTMLElement
+    const instList = () => root.querySelector('.inst-list') as HTMLElement
+    const msrBadge = () => root.querySelector('.msr-badge') as HTMLElement
+    const sbSel = () => root.querySelector('.sb-sel') as HTMLElement
+    const selToolbar = () => root.querySelector('.sel-toolbar') as HTMLElement
+    const handlePopup = () => root.querySelector('.handle-popup') as HTMLElement
+    const printArea = () => root.querySelector('#printArea') as HTMLElement
 
     // ── Mode switch ──
     function setMode(m: string) {
@@ -57,7 +56,7 @@ export default function GarakboApp() {
       ;(root.querySelector('#btnSamul') as HTMLElement).className = 'seg-btn' + (m === 'samul' ? ' on' : '')
       ;(root.querySelector('#btnBasic') as HTMLElement).className = 'seg-btn' + (m === 'basic' ? ' on' : '')
       ;(root.querySelector('.samul-side') as HTMLElement).style.display = m === 'samul' ? 'block' : 'none'
-      ;(root.querySelector('.basic-side') as HTMLElement).style.display = m === 'basic'  ? 'block' : 'none'
+      ;(root.querySelector('.basic-side') as HTMLElement).style.display = m === 'basic' ? 'block' : 'none'
       closePopup()
       render()
       updateStatus()
@@ -82,12 +81,15 @@ export default function GarakboApp() {
 
         const btn = document.createElement('button')
         btn.className = 'inst-btn' + (selI === ii ? ' active' : '') + (openI === ii ? ' open' : '')
+
         const nameSpan = document.createElement('span')
         nameSpan.style.color = inst.color
         nameSpan.textContent = inst.name
+
         const chevSpan = document.createElement('span')
         chevSpan.className = 'chev'
         chevSpan.textContent = '▾'
+
         btn.appendChild(nameSpan); btn.appendChild(chevSpan)
         btn.onclick = () => {
           openI = openI === ii ? -1 : ii
@@ -98,6 +100,7 @@ export default function GarakboApp() {
 
         const drop = document.createElement('div')
         drop.className = 'inst-dropdown' + (openI === ii ? ' open' : '')
+
         inst.sounds.forEach((snd, si) => {
           const sb = document.createElement('button')
           sb.className = 'snd-btn' + (selI === ii && selS === si ? ' sel' : '')
@@ -112,6 +115,7 @@ export default function GarakboApp() {
           }
           drop.appendChild(sb)
         })
+
         wrap.appendChild(drop)
         list.appendChild(wrap)
       })
@@ -138,9 +142,10 @@ export default function GarakboApp() {
 
       for (let m = 0; m < numM; m++) {
         const tbody = document.createElement('tbody'); tbody.className = 'mb'
+
         INST.forEach((inst, ii) => {
           const lastInst = ii === INST.length - 1
-          const bbClass  = lastInst ? 'bb-block' : 'bb-inst'
+          const bbClass = lastInst ? 'bb-block' : 'bb-inst'
           const tr = document.createElement('tr')
 
           if (ii === 0) {
@@ -161,11 +166,13 @@ export default function GarakboApp() {
               const ci = b * SUBS + s
               const key = `${m}_${ii}_${ci}`
               const nd = samulData[key]
+
               const td = document.createElement('td')
               td.className = 'td-note ' + bbClass
               td.style.padding = '0'
               td.dataset.r = String(m * INST.length + ii)
               td.dataset.c = String(ci); td.dataset.mode = 'samul'
+
               if (s < SUBS - 1) td.classList.add('br-sub')
               else if (b < BEATS - 1) td.classList.add('br-beat')
               else td.classList.add('br-edge')
@@ -173,6 +180,7 @@ export default function GarakboApp() {
               const inp = document.createElement('input')
               inp.className = 'cell-input'; inp.type = 'text'; inp.maxLength = 4
               inp.value = nd ? nd.snd : ''
+
               inp.addEventListener('input', () => {
                 const v = inp.value.trim()
                 if (v) samulData[key] = { snd: v }; else delete samulData[key]
@@ -204,9 +212,12 @@ export default function GarakboApp() {
 
           tbody.appendChild(tr)
         })
+
         tbl.appendChild(tbody)
       }
+
       con.appendChild(tbl)
+
       const addWrap = document.createElement('div'); addWrap.className = 'add-row-wrap'
       const addBtn = document.createElement('button'); addBtn.className = 'add-row-btn'; addBtn.textContent = '+ 마디 추가'
       addBtn.onclick = () => { numM++; render(); updateStatus() }
@@ -242,6 +253,7 @@ export default function GarakboApp() {
             const ci = b * SUBS + s; const key = `${r}_${ci}`; const nd = basicData[key]
             const td = document.createElement('td'); td.className = 'td-note ' + bbClass; td.style.padding = '0'
             td.dataset.r = String(r); td.dataset.c = String(ci); td.dataset.mode = 'basic'
+
             if (s < SUBS - 1) td.classList.add('br-sub')
             else if (b < BEATS - 1) td.classList.add('br-beat')
             else td.classList.add('br-edge')
@@ -275,7 +287,9 @@ export default function GarakboApp() {
 
         tbl.appendChild(tr)
       }
+
       con.appendChild(tbl)
+
       const addWrap = document.createElement('div'); addWrap.className = 'add-row-wrap'
       const addBtn = document.createElement('button'); addBtn.className = 'add-row-btn'; addBtn.textContent = '+ 행 추가'
       addBtn.onclick = () => { basicRows++; render(); updateStatus() }
@@ -286,7 +300,7 @@ export default function GarakboApp() {
     function openPopup(e: MouseEvent, type: string, idx: number) {
       e.stopPropagation(); popType = type; popIdx = idx
       const maxIdx = type === 'measure' ? numM - 1 : basicRows - 1
-      ;(handlePopup().querySelector('#pop-up') as HTMLButtonElement).disabled   = idx === 0
+      ;(handlePopup().querySelector('#pop-up') as HTMLButtonElement).disabled = idx === 0
       ;(handlePopup().querySelector('#pop-down') as HTMLButtonElement).disabled = idx === maxIdx
       handlePopup().classList.add('show')
       let x = e.clientX + 12, y = e.clientY - 8
@@ -294,12 +308,13 @@ export default function GarakboApp() {
       if (y + 120 > window.innerHeight) y = e.clientY - 110
       handlePopup().style.left = x + 'px'; handlePopup().style.top = y + 'px'
     }
+
     function closePopup() { handlePopup().classList.remove('show') }
 
     function handleAction(action: string) {
       closePopup()
-      if (action === 'up')     { popType === 'measure' ? swapMeasures(popIdx!, popIdx! - 1) : swapRows(popIdx!, popIdx! - 1) }
-      if (action === 'down')   { popType === 'measure' ? swapMeasures(popIdx!, popIdx! + 1) : swapRows(popIdx!, popIdx! + 1) }
+      if (action === 'up') { popType === 'measure' ? swapMeasures(popIdx!, popIdx! - 1) : swapRows(popIdx!, popIdx! - 1) }
+      if (action === 'down') { popType === 'measure' ? swapMeasures(popIdx!, popIdx! + 1) : swapRows(popIdx!, popIdx! + 1) }
       if (action === 'delete') { popType === 'measure' ? deleteMeasure(popIdx!) : deleteRow(popIdx!) }
       render(); updateStatus()
     }
@@ -318,6 +333,7 @@ export default function GarakboApp() {
       if (descData[db]) descData[da] = descData[db]; else delete descData[da]
       if (tmpD) descData[db] = tmpD; else delete descData[db]
     }
+
     function deleteMeasure(idx: number) {
       if (numM <= 1) { alert('마지막 마디는 삭제할 수 없습니다.'); return }
       for (let m = idx; m < numM - 1; m++) {
@@ -334,6 +350,7 @@ export default function GarakboApp() {
       INST.forEach((_, ii) => { for (let c = 0; c < CELLS; c++) delete samulData[`${last}_${ii}_${c}`] })
       delete descData[`samul_${last}`]; numM--
     }
+
     function swapRows(a: number, b: number) {
       if (a < 0 || b < 0 || a >= basicRows || b >= basicRows) return
       for (let c = 0; c < CELLS; c++) {
@@ -346,6 +363,7 @@ export default function GarakboApp() {
       if (descData[db]) descData[da] = descData[db]; else delete descData[da]
       if (tmpD) descData[db] = tmpD; else delete descData[db]
     }
+
     function deleteRow(idx: number) {
       if (basicRows <= 1) { alert('마지막 행은 삭제할 수 없습니다.'); return }
       for (let r = idx; r < basicRows - 1; r++) {
@@ -373,6 +391,7 @@ export default function GarakboApp() {
       if (e.button !== 0) return
       mouseDownCell = td; mouseDownX = e.clientX; mouseDownY = e.clientY; didDrag = false; isSelecting = false
     }
+
     function onCellMouseOver(e: MouseEvent, td: HTMLElement) {
       if (!mouseDownCell) return
       const dx = Math.abs(e.clientX - mouseDownX), dy = Math.abs(e.clientY - mouseDownY)
@@ -380,15 +399,19 @@ export default function GarakboApp() {
       if (!didDrag) { didDrag = true; isSelecting = true; selAnchor = cellCoord(mouseDownCell) }
       selCurrent = cellCoord(td); paintSelection(); hideSelToolbar()
     }
+
     function cellCoord(td: HTMLElement) {
       return { r: parseInt(td.dataset.r!), c: parseInt(td.dataset.c!) }
     }
+
     function getSelRect() {
       if (!selAnchor) return null
       const cur = selCurrent || selAnchor
       return { r0: Math.min(selAnchor.r, cur.r), r1: Math.max(selAnchor.r, cur.r), c0: Math.min(selAnchor.c, cur.c), c1: Math.max(selAnchor.c, cur.c) }
     }
+
     function getAllNoteTds() { return root.querySelectorAll('.td-note[data-r]') as NodeListOf<HTMLElement> }
+
     function paintSelection() {
       const rect = getSelRect()
       getAllNoteTds().forEach(td => {
@@ -397,6 +420,7 @@ export default function GarakboApp() {
         else td.classList.remove('sel-cell')
       })
     }
+
     function clearSelection() { selAnchor = null; selCurrent = null; getAllNoteTds().forEach(td => td.classList.remove('sel-cell')); hideSelToolbar() }
     function hasSelection() { return selAnchor !== null }
 
@@ -407,7 +431,9 @@ export default function GarakboApp() {
       if (ty < 4) ty = y + 10
       tb.style.left = tx + 'px'; tb.style.top = ty + 'px'
     }
+
     function hideSelToolbar() { selToolbar().classList.remove('show') }
+
     function showContextMenuAt(e: MouseEvent) {
       if (hasSelection()) { showSelToolbarAt(e.clientX, e.clientY); return }
       const td = (e.currentTarget as HTMLElement)?.closest?.('.td-note') as HTMLElement
@@ -419,20 +445,24 @@ export default function GarakboApp() {
       if (mode === 'samul') { const m = Math.floor(r / INST.length), ii = r % INST.length, key = `${m}_${ii}_${c}`; return samulData[key]?.snd || '' }
       else { return basicData[`${r}_${c}`]?.snd || '' }
     }
+
     function setCellValue(r: number, c: number, val: string) {
       if (mode === 'samul') { const m = Math.floor(r / INST.length), ii = r % INST.length; if (m >= numM) return; const key = `${m}_${ii}_${c}`; if (val) samulData[key] = { snd: val }; else delete samulData[key] }
       else { if (r >= basicRows) return; const key = `${r}_${c}`; if (val) basicData[key] = { snd: val }; else delete basicData[key] }
     }
+
     function refreshCell(r: number, c: number) {
       const td = root.querySelector(`.td-note[data-r="${r}"][data-c="${c}"]`) as HTMLElement
       if (!td) return; const val = getCellValue(r, c); const inp = td.querySelector('input') as HTMLInputElement
       if (inp) inp.value = val; else td.textContent = val
     }
+
     function selDelete() {
       const rect = getSelRect(); if (!rect) return
       for (let r = rect.r0; r <= rect.r1; r++) for (let c = rect.c0; c <= rect.c1; c++) { setCellValue(r, c, ''); refreshCell(r, c) }
       hideSelToolbar()
     }
+
     function selCopy() {
       const rect = getSelRect(); if (!rect) return
       clipboard2d = []
@@ -446,6 +476,7 @@ export default function GarakboApp() {
         }
       })
     }
+
     function selPaste() {
       if (!clipboard2d || !selAnchor) return
       const startR = selAnchor.r, startC = selAnchor.c
@@ -455,71 +486,121 @@ export default function GarakboApp() {
 
     // ── PDF Export ──
     const SAMUL_PER_PAGE = 5, BASIC_PER_PAGE = 10
+
     function exportPDF() {
+      // ✅ XSS 방지: title을 직접 textContent로 삽입
       const title = titleInput().value || '가락보'
       const pa = printArea(); pa.innerHTML = ''
+
       if (mode === 'samul') {
         const pages = Math.ceil(numM / SAMUL_PER_PAGE)
         for (let p = 0; p < pages; p++) {
           const pageDiv = document.createElement('div'); pageDiv.className = 'print-page'
+
           if (p === 0) {
-            const hdg = document.createElement('div')
-            hdg.className = 'print-page-heading'
-            const ptDiv = document.createElement('div')
-            ptDiv.className = 'pt'
-            ptDiv.textContent = title   // ← 핵심 변경
+            const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
+            // ✅ innerHTML 대신 createElement + textContent 사용 (XSS 방지)
+            const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
+            ptDiv.textContent = title
             hdg.appendChild(ptDiv)
             pageDiv.appendChild(hdg)
           }
-}
+
           const tbl = document.createElement('table'); tbl.className = 'gp'
           const start = p * SAMUL_PER_PAGE, end = Math.min(start + SAMUL_PER_PAGE, numM)
+
           for (let m = start; m < end; m++) {
+            // ✅ 마디마다 tbody로 감싸서 page-break-inside 적용
+            const tbody = document.createElement('tbody')
+            tbody.style.pageBreakInside = 'avoid'
+            tbody.style.breakInside = 'avoid'
+
             INST.forEach((inst, ii) => {
               const lastInst = ii === INST.length - 1, bbClass = lastInst ? 'gp-bb-block' : 'gp-bb-inst'
               const tr = document.createElement('tr')
-              if (ii === 0) { const numTd = document.createElement('td'); numTd.className = 'gp-msr-num'; numTd.rowSpan = INST.length; numTd.textContent = String(m + 1); tr.appendChild(numTd) }
-              const nameTd = document.createElement('td'); nameTd.className = 'gp-inst-name ' + bbClass; nameTd.textContent = inst.name; tr.appendChild(nameTd)
+
+              if (ii === 0) {
+                const numTd = document.createElement('td'); numTd.className = 'gp-msr-num'; numTd.rowSpan = INST.length
+                numTd.textContent = String(m + 1); tr.appendChild(numTd)
+              }
+
+              const nameTd = document.createElement('td'); nameTd.className = 'gp-inst-name ' + bbClass
+              nameTd.textContent = inst.name; tr.appendChild(nameTd)
+
               for (let b = 0; b < BEATS; b++) for (let s = 0; s < SUBS; s++) {
                 const ci = b * SUBS + s, key = `${m}_${ii}_${ci}`, nd = samulData[key]
                 const td = document.createElement('td'); td.className = 'gp-note ' + bbClass
                 if (s < SUBS-1) td.classList.add('gp-br-sub'); else if (b < BEATS-1) td.classList.add('gp-br-beat'); else td.classList.add('gp-br-edge')
                 if (nd) td.textContent = nd.snd; tr.appendChild(td)
               }
-              if (showDesc && ii === 0) { const dTd = document.createElement('td'); dTd.className = 'gp-desc gp-bb-block'; dTd.rowSpan = INST.length; dTd.textContent = descData[`samul_${m}`] || ''; tr.appendChild(dTd) }
-              tbl.appendChild(tr)
+
+              if (showDesc && ii === 0) {
+                const dTd = document.createElement('td'); dTd.className = 'gp-desc gp-bb-block'; dTd.rowSpan = INST.length
+                dTd.textContent = descData[`samul_${m}`] || ''; tr.appendChild(dTd)
+              }
+
+              tbody.appendChild(tr)
             })
+
+            tbl.appendChild(tbody)
           }
+
           pageDiv.appendChild(tbl); pa.appendChild(pageDiv)
         }
+
       } else {
         const pages = Math.ceil(basicRows / BASIC_PER_PAGE)
         for (let p = 0; p < pages; p++) {
           const pageDiv = document.createElement('div'); pageDiv.className = 'print-page'
-          if (p === 0) { const hdg = document.createElement('div'); hdg.className = 'print-page-heading'; hdg.innerHTML = `<div class="pt">${title}</div>`; pageDiv.appendChild(hdg) }
+
+          if (p === 0) {
+            const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
+            // ✅ innerHTML 대신 createElement + textContent 사용 (XSS 방지)
+            const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
+            ptDiv.textContent = title
+            hdg.appendChild(ptDiv)
+            pageDiv.appendChild(hdg)
+          }
+
           const tbl = document.createElement('table'); tbl.className = 'gp'
           const start = p * BASIC_PER_PAGE, end = Math.min(start + BASIC_PER_PAGE, basicRows)
+
           for (let r = start; r < end; r++) {
+            // ✅ 행마다 tbody로 감싸서 page-break-inside 적용
+            const tbody = document.createElement('tbody')
+            tbody.style.pageBreakInside = 'avoid'
+            tbody.style.breakInside = 'avoid'
+
             const lastRow = r === end - 1, bbClass = lastRow ? 'gp-bb-block' : 'gp-bb-inst'
             const tr = document.createElement('tr')
-            const numTd = document.createElement('td'); numTd.className = 'gp-free-num ' + bbClass; numTd.textContent = String(r + 1); tr.appendChild(numTd)
+
+            const numTd = document.createElement('td'); numTd.className = 'gp-free-num ' + bbClass
+            numTd.textContent = String(r + 1); tr.appendChild(numTd)
+
             for (let b = 0; b < BEATS; b++) for (let s = 0; s < SUBS; s++) {
               const ci = b * SUBS + s, key = `${r}_${ci}`, nd = basicData[key]
               const td = document.createElement('td'); td.className = 'gp-note ' + bbClass
               if (s < SUBS-1) td.classList.add('gp-br-sub'); else if (b < BEATS-1) td.classList.add('gp-br-beat'); else td.classList.add('gp-br-edge')
               if (nd) td.textContent = nd.snd; tr.appendChild(td)
             }
-            if (showDesc) { const dTd = document.createElement('td'); dTd.className = 'gp-desc ' + bbClass; dTd.textContent = descData[`basic_${r}`] || ''; tr.appendChild(dTd) }
-            tbl.appendChild(tr)
+
+            if (showDesc) {
+              const dTd = document.createElement('td'); dTd.className = 'gp-desc ' + bbClass
+              dTd.textContent = descData[`basic_${r}`] || ''; tr.appendChild(dTd)
+            }
+
+            tbody.appendChild(tr)
+            tbl.appendChild(tbody)
           }
+
           pageDiv.appendChild(tbl); pa.appendChild(pageDiv)
         }
       }
+
       window.print()
     }
 
     // ── Event wiring ──
-    // titlebar buttons
     root.querySelector('#btnSamul')!.addEventListener('click', () => setMode('samul'))
     root.querySelector('#btnBasic')!.addEventListener('click', () => setMode('basic'))
     root.querySelector('.desc-toggle-btn')!.addEventListener('click', toggleDesc)
@@ -527,27 +608,26 @@ export default function GarakboApp() {
     root.querySelector('.btn-pdf')!.addEventListener('click', exportPDF)
     root.querySelector('.title-input')!.addEventListener('input', () => render())
 
-    // handle popup buttons
     root.querySelector('#pop-up')!.addEventListener('click', () => handleAction('up'))
     root.querySelector('#pop-down')!.addEventListener('click', () => handleAction('down'))
     root.querySelector('#pop-delete')!.addEventListener('click', () => handleAction('delete'))
 
-    // selection toolbar buttons
     root.querySelector('#sel-copy')!.addEventListener('click', selCopy)
     root.querySelector('#sel-paste')!.addEventListener('click', selPaste)
     root.querySelector('#sel-delete')!.addEventListener('click', selDelete)
 
-    // global mouseup
     const onMouseUp = (e: MouseEvent) => {
       if (didDrag && isSelecting && selAnchor) showSelToolbarAt(e.clientX, e.clientY)
       if (mouseDownCell && !didDrag && hasSelection() && !isSelecting) clearSelection()
       mouseDownCell = null; isSelecting = false
     }
+
     const onMouseDown = (e: MouseEvent) => {
       const tb = selToolbar(), popup = handlePopup()
       if (!tb.contains(e.target as Node) && !(e.target as HTMLElement).closest?.('.td-note')) clearSelection()
       if (!popup.contains(e.target as Node)) closePopup()
     }
+
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement) === root.querySelector('.title-input')) return
       if ((e.target as HTMLElement).classList.contains('cell-input') && !hasSelection()) return
@@ -557,6 +637,7 @@ export default function GarakboApp() {
       else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); selCopy() }
       else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); selPaste() }
     }
+
     document.addEventListener('mouseup', onMouseUp)
     document.addEventListener('mousedown', onMouseDown)
     document.addEventListener('keydown', onKeyDown)
