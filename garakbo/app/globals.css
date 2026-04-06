@@ -270,29 +270,36 @@ flex-shrink:0;font-size:11.5px;color:var(--text-sec);
   .titlebar,.sidebar,.statusbar,.handle-popup,.sel-toolbar,.add-row-wrap,.td-handle{display:none!important;}
   .main-area,.score-area{overflow:visible;height:auto;}
   body,html{overflow:visible;height:auto;background:white;}
-  .score-paper{box-shadow:none;border:none;border-radius:0;padding:10px;background:white;}
+  .score-paper{display:none!important;}
   .score-area{padding:0;background:white;}
   .page-wrapper{height:auto;}
-  .score-paper{display:none!important;}
-  #printArea{display:none;}
-
-.print-page{
-  width:100%;
-  display:block;        /* flex → block 으로 변경 */
-  text-align:center;
-}
-.print-page+.print-page{
-  page-break-before:always;
-  break-before:page;
+  #printArea{display:block!important;}
+  .cell-input,.desc-input{border:none;background:transparent;}
+  table.gp tbody{page-break-inside:avoid;break-inside:avoid;}
+  table.gp tr{page-break-inside:avoid;break-inside:avoid;}
 }
 
+/* ── PRINT AREA (화면에선 숨김) ── */
 #printArea{display:none;}
 
-.print-page{width:100%;display:flex;flex-direction:column;align-items:center;}
-.print-page+.print-page{page-break-before:always;}
+/* 페이지 나누기 컨테이너 */
+.print-page{
+  width:100%;
+  display:block;
+  text-align:center;
+  page-break-after:always;
+  break-after:page;
+}
+/* 마지막 페이지는 break 불필요 */
+.print-page:last-child{
+  page-break-after:auto;
+  break-after:auto;
+}
+
 .print-page-heading{text-align:center;margin-bottom:16px;width:100%;}
 .print-page-heading .pt{font-size:20px;font-weight:700;letter-spacing:-.3px;color:#1d1d1f;}
 
+/* ── PRINT TABLE ── */
 table.gp{border-collapse:collapse;border:2px solid #1d1d1f;margin:0 auto;}
 table.gp td{padding:0;text-align:center;vertical-align:middle;}
 
