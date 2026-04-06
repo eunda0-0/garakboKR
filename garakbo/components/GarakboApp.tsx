@@ -485,7 +485,8 @@ export default function GarakboApp() {
     }
 
     // ── PDF Export ──
-    const SAMUL_PER_PAGE = 5, BASIC_PER_PAGE = 10
+    const SAMUL_PER_PAGE = 4, BASIC_PER_PAGE = 8
+
 
     function exportPDF() {
       // ✅ XSS 방지: title을 직접 textContent로 삽입
