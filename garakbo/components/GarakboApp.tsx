@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react'
 const BEATS = 4, SUBS = 3, CELLS = BEATS * SUBS
 
 const INST = [
-  { name: '쇠',  color: '#ff3b30', sounds: ['갱','개','지-','갯','딱','뜨리','깽'] },
+  { name: '쇠',  color: '#ff3b30', sounds: ['갱', '당','개','지-','갯','딱','뜨리','깽'] },
   { name: '장구', color: '#007aff', sounds: ['덩','구','궁','따','기','기기','기따'] },
   { name: '북',   color: '#34c759', sounds: ['둥','두','딱'] },
   { name: '징',   color: '#5856d6', sounds: ['징','징-','짓'] },
@@ -462,7 +462,16 @@ export default function GarakboApp() {
         const pages = Math.ceil(numM / SAMUL_PER_PAGE)
         for (let p = 0; p < pages; p++) {
           const pageDiv = document.createElement('div'); pageDiv.className = 'print-page'
-          if (p === 0) { const hdg = document.createElement('div'); hdg.className = 'print-page-heading'; hdg.innerHTML = `<div class="pt">${title}</div>`; pageDiv.appendChild(hdg) }
+          if (p === 0) {
+            const hdg = document.createElement('div')
+            hdg.className = 'print-page-heading'
+            const ptDiv = document.createElement('div')
+            ptDiv.className = 'pt'
+            ptDiv.textContent = title   // ← 핵심 변경
+            hdg.appendChild(ptDiv)
+            pageDiv.appendChild(hdg)
+          }
+}
           const tbl = document.createElement('table'); tbl.className = 'gp'
           const start = p * SAMUL_PER_PAGE, end = Math.min(start + SAMUL_PER_PAGE, numM)
           for (let m = start; m < end; m++) {
