@@ -254,6 +254,8 @@ tbody.mb:hover .handle-btn{color:#c7c7cc;}
   .score-paper{display:none!important;}
   #printArea{display:block!important;}
   .cell-input,.desc-input{border:none;background:transparent;}
+   table.gp tbody { page-break-inside: avoid; break-inside: avoid; }
+  table.gp tr    { page-break-inside: avoid; break-inside: avoid; }
 }
 #printArea{display:none;}
 .print-page{width:100%;display:flex;flex-direction:column;align-items:center;}
