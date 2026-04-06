@@ -185,15 +185,43 @@ export default function GarakboApp() {
                 const v = inp.value.trim()
                 if (v) samulData[key] = { snd: v }; else delete samulData[key]
               })
-              inp.addEventListener('focus', () => { lastFocusedSamulKey = key; lastFocusedSamulInp = inp })
+              inp.addEventListener('focus', () => {
+                lastFocusedSamulKey = key
+                lastFocusedSamulInp = inp
+              })
               inp.addEventListener('mousedown', e => {
                 if (selAnchor !== null || e.shiftKey) { e.preventDefault(); onCellMouseDown(e, td) }
                 else { mouseDownCell = td; mouseDownX = e.clientX; mouseDownY = e.clientY; didDrag = false }
               })
               inp.addEventListener('mouseover', e => onCellMouseOver(e, td))
               inp.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenuAt(e as MouseEvent) })
-              td.addEventListener('mousedown', e => { if (e.target === inp) return; e.preventDefault(); onCellMouseDown(e, td) })
+
+              // ── 셀 mousedown (드래그 선택용) ──
+              td.addEventListener('mousedown', e => {
+                if (e.target === inp) return
+                e.preventDefault()
+                onCellMouseDown(e, td)
+              })
               td.addEventListener('mouseover', e => onCellMouseOver(e, td))
+
+              // ── 싱글클릭: 선택된 소리 바로 입력 ──
+              td.addEventListener('click', e => {
+                if (e.target === inp) return
+                if (didDrag) return
+                const snd = INST[selI].sounds[selS]
+                samulData[key] = { snd }
+                inp.value = snd
+                lastFocusedSamulKey = key
+                lastFocusedSamulInp = inp
+              })
+
+              // ── 더블클릭: 텍스트 직접 편집 모드 ──
+              td.addEventListener('dblclick', e => {
+                if (e.target === inp) return
+                inp.focus()
+                inp.select()
+              })
+
               td.appendChild(inp); tr.appendChild(td)
             }
           }
@@ -267,8 +295,31 @@ export default function GarakboApp() {
             })
             inp.addEventListener('mouseover', e => onCellMouseOver(e, td))
             inp.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenuAt(e as MouseEvent) })
-            td.addEventListener('mousedown', e => { if (e.target === inp) return; e.preventDefault(); onCellMouseDown(e, td) })
+
+            // ── 셀 mousedown (드래그 선택용) ──
+            td.addEventListener('mousedown', e => {
+              if (e.target === inp) return
+              e.preventDefault()
+              onCellMouseDown(e, td)
+            })
             td.addEventListener('mouseover', e => onCellMouseOver(e, td))
+
+            // ── 싱글클릭: 선택된 소리 바로 입력 ──
+            td.addEventListener('click', e => {
+              if (e.target === inp) return
+              if (didDrag) return
+              const snd = INST[selI].sounds[selS]
+              basicData[key] = { snd }
+              inp.value = snd
+            })
+
+            // ── 더블클릭: 텍스트 직접 편집 모드 ──
+            td.addEventListener('dblclick', e => {
+              if (e.target === inp) return
+              inp.focus()
+              inp.select()
+            })
+
             td.appendChild(inp); tr.appendChild(td)
           }
         }
@@ -487,9 +538,7 @@ export default function GarakboApp() {
     // ── PDF Export ──
     const SAMUL_PER_PAGE = 4, BASIC_PER_PAGE = 8
 
-
     function exportPDF() {
-      // ✅ XSS 방지: title을 직접 textContent로 삽입
       const title = titleInput().value || '가락보'
       const pa = printArea(); pa.innerHTML = ''
 
@@ -500,7 +549,6 @@ export default function GarakboApp() {
 
           if (p === 0) {
             const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
-            // ✅ innerHTML 대신 createElement + textContent 사용 (XSS 방지)
             const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
             ptDiv.textContent = title
             hdg.appendChild(ptDiv)
@@ -511,7 +559,6 @@ export default function GarakboApp() {
           const start = p * SAMUL_PER_PAGE, end = Math.min(start + SAMUL_PER_PAGE, numM)
 
           for (let m = start; m < end; m++) {
-            // ✅ 마디마다 tbody로 감싸서 page-break-inside 적용
             const tbody = document.createElement('tbody')
             tbody.style.pageBreakInside = 'avoid'
             tbody.style.breakInside = 'avoid'
@@ -556,7 +603,6 @@ export default function GarakboApp() {
 
           if (p === 0) {
             const hdg = document.createElement('div'); hdg.className = 'print-page-heading'
-            // ✅ innerHTML 대신 createElement + textContent 사용 (XSS 방지)
             const ptDiv = document.createElement('div'); ptDiv.className = 'pt'
             ptDiv.textContent = title
             hdg.appendChild(ptDiv)
@@ -567,7 +613,6 @@ export default function GarakboApp() {
           const start = p * BASIC_PER_PAGE, end = Math.min(start + BASIC_PER_PAGE, basicRows)
 
           for (let r = start; r < end; r++) {
-            // ✅ 행마다 tbody로 감싸서 page-break-inside 적용
             const tbody = document.createElement('tbody')
             tbody.style.pageBreakInside = 'avoid'
             tbody.style.breakInside = 'avoid'
@@ -700,7 +745,7 @@ export default function GarakboApp() {
       {/* STATUS */}
       <div className="statusbar">
         <span>선택: <span className="sb-sel">쇠 · 갱</span></span>
-        <span className="sb-r">3소박 4박 · 우클릭으로 삭제</span>
+        <span className="sb-r">3소박 4박 · 싱글클릭 입력 · 더블클릭 직접편집</span>
       </div>
 
       {/* Selection toolbar */}
